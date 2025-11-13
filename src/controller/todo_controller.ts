@@ -3,6 +3,7 @@ import { todoService } from "../service/todo.service";
 import { CreateTodoDTO } from "../dtos/todo.dto";
 import { AuthRequest } from "../middleware/auth.middleware";
 import { ApiResponse } from "../utils/api.response";
+import { error } from "console";
 
 class TodoController {
 
@@ -35,6 +36,8 @@ class TodoController {
         await todoService.assignTodo(assignee, todoId)
             .then((value) => {
                 ApiResponse.success(res, "Task Assigned", value);
+            }).catch((error) => {
+                ApiResponse.error(res, error)
             });
     }
 }
