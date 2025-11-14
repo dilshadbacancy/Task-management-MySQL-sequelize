@@ -19,6 +19,7 @@ interface Config {
     }
     keys: {
         secret_jwt_key: string,
+        open_route_key: string
     }
 }
 
@@ -46,6 +47,7 @@ function validateConfig() {
         },
         keys: {
             secret_jwt_key: process.env.JWT_SECRET,
+            open_route_key: process.env.OPEN_ROUTE_KEY
         }
     }
 }
