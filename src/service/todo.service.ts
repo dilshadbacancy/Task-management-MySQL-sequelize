@@ -16,7 +16,11 @@ class TodoService {
         })
     }
 
-    async getAllTodos(userId: number, completed?: string, assigned?: boolean): Promise<Todo[]> {
+    async getAllTodos(userId: number, completed?: string, assigned?: boolean,
+        query?: { page: number; limit: number; offset: number; }): Promise<{
+            rows: Todo[];
+            count: number;
+        }> {
 
         let where: any = {}
         if (assigned && completed !== undefined) {
@@ -34,14 +38,16 @@ class TodoService {
             where.creator = userId;
         }
 
-        const todos = await Todo.findAll({
+        const todos = await Todo.findAndCountAll({
             where,
             include: [
                 { model: User, as: "createdByUser", attributes: ["id", "name", "email"] },
                 { model: User, as: "assignedByUser", attributes: ["id", "name", "email"] },
                 { model: User, as: "assignToUser", attributes: ["id", "name", "email"] },
             ],
-            order: [["createdAt", "DESC"]],
+            order: [["createdAt", "ASC"]],
+            limit: query?.limit,
+            offset: query?.offset,
         });
         return todos;
     }

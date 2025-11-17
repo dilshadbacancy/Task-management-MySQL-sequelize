@@ -4,6 +4,8 @@ import { CreateTodoDTO } from "../dtos/todo.dto";
 import { AuthRequest } from "../middleware/auth.middleware";
 import { ApiResponse } from "../utils/api.response";
 import { error } from "console";
+import { getPagination } from "../utils/pagination";
+import { getMetaData } from "../utils/metadata";
 
 class TodoController {
 
@@ -22,9 +24,14 @@ class TodoController {
         const status = req.query.status as string || undefined;
         const assigned = req.query.is_assigned === 'true';
         const id = req.user!.id;
-        return todoService.getAllTodos(id, status, assigned)
+
+        const query = getPagination(req.query);
+        return todoService.getAllTodos(id, status, assigned, query)
             .then((value) => {
-                ApiResponse.success(res, "Todos fetched successfully.", value);
+
+
+
+                ApiResponse.success(res, "Todos fetched successfully.", value, getMetaData(value, query));
             })
             .catch((error) => {
                 ApiResponse.error(res, error);

@@ -3,11 +3,23 @@ import { AuthRequest } from "../middleware/auth.middleware";
 
 export class ApiResponse {
 
-    static success(res: Response, message: string | "Success", data: any, statusCode = 200) {
+    static success(
+        res: Response,
+        message: string = "Success",
+        data: any = null,
+        meta: Record<string, any> | null = null,
+        statusCode: number = 200
+    ) {
+
+        const responseData = (data && typeof data === "object" && "count" in data)
+            ? data.rows
+            : data;
+
         return res.status(statusCode).json({
             success: true,
-            message: message,
-            data: data || null,
+            message,
+            meta: meta,
+            data: responseData ?? null,
         });
     }
 

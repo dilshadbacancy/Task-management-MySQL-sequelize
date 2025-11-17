@@ -6,6 +6,7 @@ import { UtilsHelper } from '../utils/jwt.helper';
 import { ApiResponse } from '../utils/api.response';
 import e from 'express';
 import { AuthRequest, blackListToken } from '../middleware/auth.middleware';
+import { getMetaData } from '../utils/metadata';
 
 class UserController {
 
@@ -121,7 +122,7 @@ class UserController {
     async findAllUsers(req: Request, res: Response): Promise<void> {
         await userService.getAllUsers()
             .then((value) => {
-                ApiResponse.success(res, "Fethed all the users.", value)
+                ApiResponse.success(res, "Fethed all the users.", value, getMetaData(value, req.query))
             }).catch((error) => {
                 ApiResponse.error(res, error);
             })

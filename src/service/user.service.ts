@@ -57,8 +57,11 @@ class UserService {
         return stream;
     }
 
-    async getAllUsers(): Promise<User[]> {
-        const user = await User.findAll();
+    async getAllUsers(): Promise<{
+        rows: User[];
+        count: number;
+    }> {
+        const user = await User.findAndCountAll();
         return user;
     }
 
