@@ -6,6 +6,7 @@ import { SequelizeConnection } from "./config/databse";
 import User from "./models/user.modle";
 import userRoute from './route/user.route'
 import todoRoute from "./route/todo.route";
+import externalApiRoute from "./route/external.api.route";
 import "./models/associations"; // 👈 this is CRUCIAL
 
 
@@ -16,6 +17,7 @@ app.use(express.json());
 
 app.use('/api/users', userRoute)
 app.use('/api/todos', todoRoute)
+app.use('/api/posts', externalApiRoute)
 const PORT = config.server.port;
 const sequelize = SequelizeConnection.getInstance();
 

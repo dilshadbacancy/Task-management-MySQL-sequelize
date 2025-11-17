@@ -5,7 +5,7 @@ import { JWTPaylod } from '../types';
 import { UtilsHelper } from '../utils/jwt.helper';
 import { ApiResponse } from '../utils/api.response';
 import e from 'express';
-import { AuthRequest } from '../middleware/auth.middleware';
+import { AuthRequest, blackListToken } from '../middleware/auth.middleware';
 
 class UserController {
 
@@ -21,26 +21,91 @@ class UserController {
     }
 
     async loginUser(req: Request, res: Response): Promise<void> {
-
+        const { remaining, limit } = req.rateLimit;
         if (!req.body.email) {
-            ApiResponse.error(res, "Email is required")
+            ApiResponse.error(
+                res,
+                {
+                    message: "Password is required.",
+                    attemptsLeft: remaining,
+                    attemptsUsed: limit - remaining,
+
+                })
             return;
         };
 
         if (!req.body.password) {
-            ApiResponse.error(res, "Passowrd is required")
+            ApiResponse.error(
+                res,
+                {
+                    message: "Password is required.",
+                    attemptsLeft: remaining,
+                    attemptsUsed: limit - remaining,
+                })
             return;
         };
 
         const dto: UserDto = req.body;
         await userService.loginUser(dto).then(async (value) => {
-            if (!value) return ApiResponse.error(res, "User not found")
+            if (!value) {
+                res.status(401).json({
+                    message: "User not found.",
+                    attemptsLeft: remaining,
+                    attemptsUsed: limit - remaining,
+                });
+                return;
+            }
             const isValidPassword = await value.comparePassword(dto.password);
-            if (!isValidPassword) return ApiResponse.error(res, "Password doesnot match");
+            if (!isValidPassword) {
+                res.status(401).json({
+                    message: "Password is not matcheddd.",
+                    attemptsLeft: remaining,
+                    attemptsUsed: limit - remaining,
+                });
+                return;
+            }
             const payload: JWTPaylod = value;
             const token = UtilsHelper.generateAccessToken(payload)
             ApiResponse.success(res, "Login success", { ...value.toJSON(), token })
 
+        }).catch((error) => {
+            ApiResponse.error(res, error);
+        })
+    }
+
+
+    async logoutUser(req: AuthRequest, res: Response): Promise<void> {
+        const token = req.headers.authorization?.split(' ')[1];
+
+        if (token) {
+            blackListToken(token);
+        }
+        ApiResponse.success(res, "Logout successfully.", "Token is blacklisted");
+    }
+
+    async uploadFile(req: AuthRequest, res: Response): Promise<void> {
+
+        if (!req.file) {
+            ApiResponse.error(res, "File is required")
+            return;
+        };
+        const id = req.user?.id;
+
+        const saved = await userService.uploadFile(req.file, id!);
+        if (!saved) {
+            ApiResponse.error(res, "Failed to upload");
+        }
+        ApiResponse.success(res, "File uploaded", saved);
+    }
+
+    async getFile(req: AuthRequest, res: Response): Promise<void> {
+        await userService.getFile(req.user!.id).then((value) => {
+            if (!value) {
+                ApiResponse.error(res, "File not found");
+                return;
+            }
+
+            res.end(value)
         }).catch((error) => {
             ApiResponse.error(res, error);
         })

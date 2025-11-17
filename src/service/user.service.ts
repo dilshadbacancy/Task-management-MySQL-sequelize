@@ -2,6 +2,8 @@ import bcrypt from 'bcryptjs';
 import { ChangePasswordDto, UserDto } from "../dtos/user.dto";
 import User from "../models/user.modle";
 import { UserRole, JWTPaylod } from "../types";
+import { FileService } from '../utils/file.utils';
+import fs from 'fs';
 
 class UserService {
 
@@ -40,6 +42,19 @@ class UserService {
         user.name = data.name;
         user.save();
         return user;
+    }
+
+    async uploadFile(file: Express.Multer.File, userId: number): Promise<any> {
+        const result = FileService.saveToLocalByUser(file, userId);
+        return result;
+
+    }
+
+
+
+    async getFile(userId: number,): Promise<any> {
+        const stream = FileService.getUserFirstFileBuffer(userId);
+        return stream;
     }
 
     async getAllUsers(): Promise<User[]> {

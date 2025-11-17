@@ -11,6 +11,13 @@ export interface AuthRequest extends Request {
     user?: User
 }
 
+
+
+const blackListTokens = new Set<string>;
+export const blackListToken = (token: string) => {
+    blackListTokens.add(token)
+}
+
 export const authMiddleware = async (
     req: AuthRequest,
     res: Response,
@@ -31,6 +38,14 @@ export const authMiddleware = async (
             res.status(401).json({
                 success: false,
                 message: "Invalid token formate  "
+            })
+            return;
+        }
+
+        if (blackListTokens.has(token)) {
+            res.status(401).json({
+                status: false,
+                messgae: "Token is blacklisted, Please login again"
             })
             return;
         }
